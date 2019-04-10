@@ -18,9 +18,27 @@ class Integer(LispObject):
     @staticmethod
     def parse(str):
         i = 0
-        while i < len(str) and (str[i] >= '0' and str[i] <= '9' or str[i] == '-'):
+        while i < len(str) and (str[i] >= '0' and str[i] <= '9' or str[i] == '-') and str.find(".") == -1:
             i += 1
         return i, Integer(int(str[0:i]))
+
+
+class Float(LispObject):
+    def __init__(self, value):
+        self.value = value
+
+    @staticmethod
+    def parse(str):
+        i = 0
+        while i < len(str) and (str[i] >= '0' and str[i] <= '9' or str[i] == '-' or str[i] == '.') and str.find(".") != -1:
+            i += 1
+        if str[0:i].find(".") == -1:
+            return i, Float(int(str[0:i]))
+        else:
+            return i, Float(float(str[0:i]))
+
+    def eval(self):
+        return self.value
 
 
 class List(LispObject):
@@ -50,12 +68,20 @@ def parse(str):
     i = 0
     while i < len(str) and str[i] == ' ':
         i += 1
-    if str[i] >= '0' and str[i] <= '9':
-        return Integer.parse(str[i:])
-    elif len(str) > i+1 and str[i] == '-' and str[i+1] >= '0' and str[i+1] <= '9':
-        return Integer.parse(str[i:])
-    elif str[i] == '(':
-        return List.parse(str[i:])
+    if str[i:].find(".") == -1:
+        if str[i] >= '0' and str[i] <= '9':
+            return Integer.parse(str[i:])
+        elif len(str) > i+1 and str[i] == '-' and str[i+1] >= '0' and str[i+1] <= '9':
+            return Integer.parse(str[i:])
+        elif str[i] == '(':
+            return List.parse(str[i:])
+    elif str[i:].find(".") != -1:
+        if str[i] >= '0' and str[i] <= '9':
+            return Float.parse(str[i:])
+        elif len(str) > i+1 and str[i] == '-' and str[i+1] >= '0' and str[i+1] <= '9':
+            return Float.parse(str[i:])
+        elif str[i] == '(':
+            return List.parse(str[i:])
     else:
         print('parse fail', str, i)
         pass
